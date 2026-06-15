@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050510">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mogib AI">
+<link rel="manifest" href="mogib-manifest.json">
+<title>Mogib AI Faki — ذكاء خارق</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --bg: #050510;
+  --bg2: #0a0a1f;
+  --bg3: #0f0f2e;
+  --bg4: #151535;
+  --gold: #f5a623;
+  --gold2: #ffd700;
+  --purple: #7c3aed;
+  --blue: #3b82f6;
+  --cyan: #06b6d4;
+  --green: #10b981;
+  --red: #ef4444;
+  --text: #f0f0ff;
+  --dim: #9090bb;
+  --muted: #4a4a7a;
+  --border: rgba(245,166,35,0.15);
+  --border2: rgba(245,166,35,0.35);
+  --glow: 0 0 20px rgba(245,166,35,0.2);
+  --font: 'Tajawal', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; font-family: var(--font); background: var(--bg); color: var(--text); direction: rtl; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+/* ═══════════════════════════════════
+   SPLASH
+═══════════════════════════════════ */
+.splash {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.splash-stars {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 10% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 70%, rgba(255,255,255,0.5) 0%, transparent 100%);
+}
+.splash-ring {
+  position: absolute; border-radius: 50%;
+  border: 1px solid rgba(245,166,35,0.15);
+  animation: ringPulse 3s ease-in-out infinite;
+}
+.splash-ring:nth-child(2) { width: 200px; height: 200px; animation-delay: 0s; }
+.splash-ring:nth-child(3) { width: 320px; height: 320px; animation-delay: 0.5s; }
+.splash-ring:nth-child(4) { width: 440px; height: 440px; animation-delay: 1s; }
+@keyframes ringPulse { 0%,100%{opacity:0.3;transform:scale(1)} 50%{opacity:0.8;transform:scale(1.05)} }
+
+.splash-logo-wrap { position: relative; z-index: 1; text-align: center; }
+.splash-m {
+  font-size: 5rem; font-weight: 900; line-height: 1;
+  background: linear-gradient(135deg, #f5a623, #ffd700, #ff6b35);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 20px rgba(245,166,35,0.5));
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.splash-name { font-size: 1.8rem; font-weight: 800; color: var(--text); margin-top: 4px; }
+.splash-sub { font-size: 0.85rem; color: var(--gold); margin-top: 4px; letter-spacing: 2px; }
+.splash-bar { width: 200px; height: 2px; background: var(--bg3); border-radius: 99px; margin: 24px auto 12px; overflow: hidden; }
+.splash-fill { height: 100%; background: linear-gradient(90deg, #f5a623, #ffd700); border-radius: 99px; width: 0; animation: fillBar 2.5s ease-out forwards; }
+@keyframes fillBar { to { width: 100%; } }
+.splash-status { font-size: 0.78rem; color: var(--dim); }
+
+/* ═══════════════════════════════════
+   AUTH SCREENS
+═══════════════════════════════════ */
+.auth-screen {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px; overflow-y: auto;
+}
+.auth-logo { text-align: center; margin-bottom: 28px; }
+.auth-logo-m { font-size: 3rem; font-weight: 900; background: linear-gradient(135deg, #f5a623, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.auth-logo-name { font-size: 1.3rem; font-weight: 700; color: var(--text); }
+.auth-logo-tag { font-size: 0.75rem; color: var(--gold); letter-spacing: 2px; margin-top: 2px; }
+
+.auth-card {
+  width: 100%; max-width: 400px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 24px;
+  box-shadow: var(--glow);
+}
+.auth-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; text-align: center; }
+
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 0.8rem; color: var(--dim); margin-bottom: 5px; font-weight: 600; }
+.field input {
+  width: 100%; padding: 11px 14px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text);
+  font-size: 0.9rem; font-family: var(--font); outline: none;
+  transition: border-color 0.2s;
+}
+.field input:focus { border-color: var(--gold); }
+
+.btn-gold {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, #f5a623, #ffd700);
+  border: none; border-radius: 12px;
+  color: #050510; font-size: 1rem; font-family: var(--font);
+  font-weight: 800; cursor: pointer; transition: all 0.2s;
+  margin-top: 4px;
+}
+.btn-gold:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-gold:active { transform: scale(0.97); }
+.btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.auth-switch { text-align: center; margin-top: 16px; font-size: 0.83rem; color: var(--dim); }
+.auth-switch a { color: var(--gold); cursor: pointer; font-weight: 700; }
+
+.divider { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
+.divider-line { flex: 1; height: 1px; background: var(--border); }
+.divider-text { font-size: 0.75rem; color: var(--muted); }
+
+/* PLANS */
+.plans-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 16px 0; }
+.plan-card {
+  background: var(--bg3); border: 2px solid var(--border);
+  border-radius: 14px; padding: 14px; cursor: pointer;
+  transition: all 0.2s; position: relative;
+}
+.plan-card.selected { border-color: var(--gold); background: rgba(245,166,35,0.08); }
+.plan-card.popular::before {
+  content: '⭐ الأشهر'; position: absolute; top: -10px; right: 16px;
+  background: linear-gradient(135deg, #f5a623, #ffd700);
+  color: #050510; font-size: 0.7rem; font-weight: 800;
+  padding: 2px 10px; border-radius: 99px;
+}
+.plan-header { display: flex; justify-content: space-between; align-items: center; }
+.plan-name { font-weight: 800; font-size: 0.95rem; }
+.plan-price { font-size: 1.2rem; font-weight: 900; color: var(--gold); }
+.plan-price span { font-size: 0.7rem; color: var(--dim); font-weight: 400; }
+.plan-features { margin-top: 8px; }
+.plan-features li { font-size: 0.78rem; color: var(--dim); list-style: none; padding: 2px 0; }
+.plan-features li::before { content: '✓ '; color: var(--green); font-weight: 700; }
+
+/* PAYMENT */
+.payment-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.pay-method {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px; cursor: pointer;
+  text-align: center; transition: all 0.2s; font-size: 0.8rem;
+}
+.pay-method.selected { border-color: var(--gold); color: var(--gold); }
+.pay-method .pm-icon { font-size: 1.4rem; display: block; margin-bottom: 3px; }
+
+/* ═══════════════════════════════════
+   MAIN APP
+═══════════════════════════════════ */
+.app { display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden; }
+
+/* TOPBAR */
+.topbar {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; min-height: 52px;
+}
+.menu-btn { background: none; border: none; color: var(--dim); font-size: 1.3rem; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+.topbar-logo { flex: 1; display: flex; align-items: center; gap: 6px; }
+.topbar-m { font-size: 1.1rem; font-weight: 900; background: linear-gradient(135deg, #f5a623, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.topbar-name { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+.plan-badge {
+  padding: 3px 10px; border-radius: 99px; font-size: 0.7rem; font-weight: 700;
+}
+.plan-badge.free { background: rgba(148,163,184,0.15); color: var(--dim); border: 1px solid var(--muted); }
+.plan-badge.pro { background: rgba(245,166,35,0.15); color: var(--gold); border: 1px solid rgba(245,166,35,0.4); }
+.plan-badge.ultra { background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(245,166,35,0.3)); color: #ffd700; border: 1px solid rgba(245,166,35,0.5); }
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed; right: -290px; top: 0; bottom: 0; width: 290px;
+  background: var(--bg2); border-left: 1px solid var(--border);
+  z-index: 200; transition: right 0.3s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+.sidebar.open { right: 0; }
+.sidebar-header {
+  padding: 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.user-info { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, #f5a623, #7c3aed);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.1rem; color: white;
+  border: 2px solid var(--gold);
+}
+.user-name { font-weight: 700; font-size: 0.9rem; }
+.user-email { font-size: 0.73rem; color: var(--dim); }
+.close-sidebar { background: none; border: none; color: var(--dim); font-size: 1.1rem; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+
+.sidebar-section { padding: 10px 12px; }
+.sidebar-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; padding: 6px 4px 4px; }
+
+.nav-btn {
+  width: 100%; padding: 10px 12px; background: none; border: none;
+  border-radius: 10px; color: var(--dim); cursor: pointer;
+  font-size: 0.87rem; font-family: var(--font); text-align: right;
+  display: flex; align-items: center; gap: 10px; transition: all 0.2s;
+  margin-bottom: 2px;
+}
+.nav-btn:hover, .nav-btn.active { background: rgba(245,166,35,0.1); color: var(--gold); }
+.nav-btn .nav-icon { font-size: 1.1rem; flex-shrink: 0; }
+.nav-btn .nav-badge {
+  margin-right: auto; background: var(--gold); color: #050510;
+  padding: 1px 7px; border-radius: 99px; font-size: 0.65rem; font-weight: 800;
+}
+
+.upgrade-card {
+  margin: 10px 12px; background: linear-gradient(135deg, rgba(245,166,35,0.15), rgba(124,58,237,0.15));
+  border: 1px solid rgba(245,166,35,0.3); border-radius: 14px; padding: 14px;
+}
+.upgrade-title { font-weight: 800; font-size: 0.9rem; margin-bottom: 4px; color: var(--gold); }
+.upgrade-desc { font-size: 0.78rem; color: var(--dim); margin-bottom: 10px; line-height: 1.5; }
+.upgrade-btn {
+  width: 100%; padding: 9px; background: linear-gradient(135deg, #f5a623, #ffd700);
+  border: none; border-radius: 8px; color: #050510; font-weight: 800;
+  font-size: 0.85rem; font-family: var(--font); cursor: pointer;
+}
+
+.sidebar-footer { padding: 12px; border-top: 1px solid var(--border); margin-top: auto; }
+.logout-btn {
+  width: 100%; padding: 9px; background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3); border-radius: 8px;
+  color: var(--red); font-size: 0.85rem; font-family: var(--font); cursor: pointer;
+}
+
+.overlay { position: fixed; inset: 0; z-index: 199; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
+
+/* TABS */
+.tabs-bar {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; overflow-x: auto; flex-shrink: 0;
+}
+.tabs-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 10px 14px; background: none; border: none; border-bottom: 2px solid transparent;
+  color: var(--dim); font-size: 0.8rem; font-family: var(--font);
+  cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0;
+}
+.tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* CONTENT */
+.content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.tab-content { display: none; flex: 1; flex-direction: column; }
+.tab-content.active { display: flex; }
+
+/* CHAT */
+.chat-area { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+.msg { display: flex; gap: 8px; animation: msgIn 0.3s ease; }
+@keyframes msgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.msg-user { justify-content: flex-start; }
+.msg-ai { flex-direction: row-reverse; }
+.msg-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 0.85rem;
+  border: 1px solid var(--border2);
+}
+.msg-user .msg-avatar { background: rgba(124,58,237,0.3); }
+.msg-ai .msg-avatar { background: linear-gradient(135deg, rgba(245,166,35,0.3), rgba(124,58,237,0.3)); }
+.msg-bubble {
+  max-width: calc(100% - 46px); padding: 10px 13px;
+  border-radius: 14px; font-size: 0.87rem; line-height: 1.7; word-wrap: break-word;
+}
+.msg-user .msg-bubble { background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.3); border-top-right-radius: 4px; }
+.msg-ai .msg-bubble { background: var(--bg2); border: 1px solid var(--border); border-top-left-radius: 4px; }
+.msg-bubble pre { background: #0d1117; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px; margin: 8px 0; overflow-x: auto; font-family: var(--mono); font-size: 0.78rem; line-height: 1.6; }
+.msg-bubble code { font-family: var(--mono); font-size: 0.82em; color: var(--gold); }
+.msg-bubble pre code { color: #e2e8f0; }
+.msg-bubble strong { color: var(--gold); }
+.msg-bubble h1,.msg-bubble h2,.msg-bubble h3 { color: var(--gold); margin: 10px 0 5px; font-size: 0.95rem; }
+.msg-bubble ul { padding-right: 18px; margin: 6px 0; }
+.msg-bubble a { color: var(--cyan); }
+
+.thinking { display: flex; align-items: center; gap: 8px; padding: 10px 13px; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; border-top-left-radius: 4px; font-size: 0.83rem; color: var(--dim); }
+.dots { display: flex; gap: 4px; }
+.dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: dot 1.4s ease-in-out infinite; }
+.dots span:nth-child(2){animation-delay:0.2s}
+.dots span:nth-child(3){animation-delay:0.4s}
+@keyframes dot{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
+
+/* INPUT */
+.input-area {
+  background: var(--bg2); border-top: 1px solid var(--border);
+  padding: 10px 12px 12px; flex-shrink: 0;
+}
+.input-modes { display: flex; gap: 6px; margin-bottom: 8px; overflow-x: auto; }
+.input-modes::-webkit-scrollbar { display: none; }
+.mode-chip {
+  padding: 4px 10px; border-radius: 99px; font-size: 0.73rem;
+  border: 1px solid var(--border); background: none; color: var(--dim);
+  cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: var(--font);
+}
+.mode-chip.active { background: rgba(245,166,35,0.15); border-color: rgba(245,166,35,0.4); color: var(--gold); }
+.input-row { display: flex; gap: 8px; align-items: flex-end; background: var(--bg3); border: 1px solid var(--border); border-radius: 14px; padding: 8px 8px 8px 10px; transition: border-color 0.2s; }
+.input-row:focus-within { border-color: var(--gold); }
+#userInput { flex: 1; background: none; border: none; outline: none; color: var(--text); font-size: 0.88rem; font-family: var(--font); resize: none; max-height: 120px; line-height: 1.5; direction: rtl; }
+#userInput::placeholder { color: var(--muted); }
+.send-btn { background: linear-gradient(135deg, #f5a623, #ffd700); border: none; border-radius: 10px; padding: 8px 12px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+.send-btn:hover { opacity: 0.9; transform: scale(1.05); }
+.send-btn:disabled { opacity: 0.4; transform: none; }
+
+/* WELCOME */
+.welcome { padding: 20px 14px; text-align: center; flex-shrink: 0; }
+.welcome-icon { font-size: 2.5rem; margin-bottom: 10px; animation: float 3s ease-in-out infinite; }
+.welcome-title { font-size: 1.3rem; font-weight: 800; color: var(--gold); margin-bottom: 6px; }
+.welcome-sub { font-size: 0.83rem; color: var(--dim); margin-bottom: 18px; line-height: 1.6; }
+.quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quick-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.2s; text-align: center; }
+.quick-card:hover { border-color: var(--gold); background: rgba(245,166,35,0.05); }
+.quick-card:active { transform: scale(0.97); }
+.quick-icon { font-size: 1.4rem; margin-bottom: 5px; }
+.quick-text { font-size: 0.77rem; color: var(--dim); }
+
+/* APP BUILDER */
+.builder-area { padding: 14px; overflow-y: auto; }
+.builder-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+.builder-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--gold); }
+.app-types { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.app-type { background: var(--bg3); border: 2px solid var(--border); border-radius: 10px; padding: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
+.app-type.selected { border-color: var(--gold); background: rgba(245,166,35,0.08); }
+.app-type-icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+.app-type-name { font-size: 0.78rem; color: var(--dim); }
+.builder-field { margin-bottom: 10px; }
+.builder-field label { display: block; font-size: 0.78rem; color: var(--dim); margin-bottom: 4px; font-weight: 600; }
+.builder-field input, .builder-field textarea, .builder-field select {
+  width: 100%; padding: 9px 12px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-size: 0.85rem; font-family: var(--font); outline: none;
+}
+.builder-field textarea { min-height: 70px; resize: vertical; }
+.build-btn { width: 100%; padding: 13px; background: linear-gradient(135deg, #f5a623, #7c3aed); border: none; border-radius: 12px; color: white; font-size: 0.95rem; font-family: var(--font); font-weight: 800; cursor: pointer; margin-top: 4px; }
+.built-apps { display: flex; flex-direction: column; gap: 8px; }
+.built-app { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; }
+.app-icon-wrap { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #f5a623, #7c3aed); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.app-info { flex: 1; }
+.app-info-name { font-size: 0.88rem; font-weight: 700; }
+.app-info-type { font-size: 0.73rem; color: var(--dim); }
+.app-dl-btn { background: rgba(245,166,35,0.15); border: 1px solid rgba(245,166,35,0.3); border-radius: 8px; padding: 6px 10px; color: var(--gold); font-size: 0.75rem; font-family: var(--font); cursor: pointer; white-space: nowrap; }
+
+/* CODE LAB */
+.code-area { padding: 14px; overflow-y: auto; }
+.code-output { background: #0d1117; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; font-family: var(--mono); font-size: 0.78rem; line-height: 1.7; color: #e2e8f0; min-height: 150px; max-height: 280px; overflow-y: auto; margin-top: 10px; white-space: pre-wrap; display: none; }
+.lang-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.lang-btn { padding: 5px 12px; border-radius: 99px; font-size: 0.75rem; border: 1px solid var(--border); background: none; color: var(--dim); cursor: pointer; font-family: var(--font); transition: all 0.2s; }
+.lang-btn.active { background: rgba(245,166,35,0.15); border-color: var(--gold); color: var(--gold); }
+
+/* SUBSCRIPTION TAB */
+.sub-area { padding: 14px; overflow-y: auto; }
+.sub-header { text-align: center; margin-bottom: 16px; }
+.sub-title { font-size: 1.2rem; font-weight: 800; color: var(--gold); }
+.sub-desc { font-size: 0.82rem; color: var(--dim); margin-top: 4px; }
+.current-plan { background: linear-gradient(135deg, rgba(245,166,35,0.1), rgba(124,58,237,0.1)); border: 1px solid rgba(245,166,35,0.3); border-radius: 14px; padding: 14px; margin-bottom: 14px; text-align: center; }
+.current-label { font-size: 0.75rem; color: var(--dim); margin-bottom: 4px; }
+.current-name { font-size: 1.3rem; font-weight: 900; color: var(--gold); }
+.current-exp { font-size: 0.78rem; color: var(--dim); margin-top: 4px; }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.stat-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; }
+.stat-val { font-size: 1.2rem; font-weight: 800; color: var(--gold); }
+.stat-label { font-size: 0.68rem; color: var(--dim); margin-top: 2px; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 999; background: var(--bg3); border: 1px solid var(--border2); padding: 10px 20px; border-radius: 99px; font-size: 0.83rem; color: var(--text); box-shadow: var(--glow); animation: fadeUp 0.3s ease; white-space: nowrap; max-width: 90vw; display: none; }
+@keyframes fadeUp { from{opacity:0;transform:translateX(-50%) translateY(10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+
+/* MODAL */
+.modal { position: fixed; inset: 0; z-index: 300; display: flex; align-items: flex-end; justify-content: center; }
+.modal-bg { position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+.modal-box { position: relative; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; padding: 20px; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+.modal-close { background: none; border: none; color: var(--dim); font-size: 1.2rem; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash" class="splash">
+  <div class="splash-stars"></div>
+  <div class="splash-ring"></div>
+  <div class="splash-ring"></div>
+  <div class="splash-ring"></div>
+  <div class="splash-logo-wrap">
+    <div class="splash-m">M</div>
+    <div class="splash-name">Mogib AI Faki</div>
+    <div class="splash-sub">ذكاء خارق — بلا حدود</div>
+    <div class="splash-bar"><div class="splash-fill"></div></div>
+    <div class="splash-status" id="splashStatus">تهيئة النظام...</div>
+  </div>
+</div>
+
+<!-- AUTH: LOGIN -->
+<div id="loginScreen" class="auth-screen hidden">
+  <div class="auth-logo">
+    <div class="auth-logo-m">M</div>
+    <div class="auth-logo-name">Mogib AI Faki</div>
+    <div class="auth-logo-tag">ذكاء خارق — بلا حدود</div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-title">🔐 تسجيل الدخول</div>
+    <div class="field">
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="loginEmail" placeholder="mogib@example.com">
+    </div>
+    <div class="field">
+      <label>كلمة المرور</label>
+      <input type="password" id="loginPass" placeholder="••••••••">
+    </div>
+    <button class="btn-gold" onclick="doLogin()">دخول ⚡</button>
+    <div class="auth-switch">
+      ليس لديك حساب؟ <a onclick="showScreen('register')">سجّل الآن</a>
+    </div>
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">أو</div><div class="divider-line"></div></div>
+    <button class="btn-gold" style="background:linear-gradient(135deg,#1a73e8,#4285f4)" onclick="googleLogin()">
+      🇬 دخول بـ Google
+    </button>
+  </div>
+</div>
+
+<!-- AUTH: REGISTER -->
+<div id="registerScreen" class="auth-screen hidden">
+  <div class="auth-logo">
+    <div class="auth-logo-m">M</div>
+    <div class="auth-logo-name">Mogib AI Faki</div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-title">✨ حساب جديد</div>
+    <div class="field">
+      <label>الاسم</label>
+      <input type="text" id="regName" placeholder="اسمك الكريم">
+    </div>
+    <div class="field">
+      <label>البريد الإلكتروني</label>
+      <input type="email" id="regEmail" placeholder="mogib@example.com">
+    </div>
+    <div class="field">
+      <label>كلمة المرور</label>
+      <input type="password" id="regPass" placeholder="8 أحرف على الأقل">
+    </div>
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:0.82rem;color:var(--dim);margin-bottom:8px;font-weight:700">اختر خطتك</div>
+      <div class="plans-grid">
+        <div class="plan-card selected" onclick="selectPlan(this,'free')" data-plan="free">
+          <div class="plan-header">
+            <span class="plan-name">🆓 مجاني</span>
+            <span class="plan-price">$0<span>/شهر</span></span>
+          </div>
+          <ul class="plan-features">
+            <li>50 رسالة يومياً</li>
+            <li>وضع محادثة فقط</li>
+            <li>حفظ محلي</li>
+          </ul>
+        </div>
+        <div class="plan-card popular" onclick="selectPlan(this,'pro')" data-plan="pro">
+          <div class="plan-header">
+            <span class="plan-name">⚡ Pro</span>
+            <span class="plan-price">$9<span>/شهر</span></span>
+          </div>
+          <ul class="plan-features">
+            <li>رسائل غير محدودة</li>
+            <li>بناء التطبيقات</li>
+            <li>بحث إنترنت</li>
+            <li>حفظ سحابي</li>
+          </ul>
+        </div>
+        <div class="plan-card" onclick="selectPlan(this,'ultra')" data-plan="ultra" style="grid-column:1/-1">
+          <div class="plan-header">
+            <span class="plan-name">👑 Ultra</span>
+            <span class="plan-price">$29<span>/شهر</span></span>
+          </div>
+          <ul class="plan-features">
+            <li>كل مميزات Pro</li>
+            <li>أولوية في الردود</li>
+            <li>تطبيقات قابلة للتحميل</li>
+            <li>دعم شخصي 24/7</li>
+            <li>API خاص بك</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-gold" onclick="doRegister()">إنشاء الحساب 🚀</button>
+    <div class="auth-switch">
+      لديك حساب؟ <a onclick="showScreen('login')">سجّل دخولك</a>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div id="paymentModal" class="modal hidden">
+  <div class="modal-bg" onclick="closePayment()"></div>
+  <div class="modal-box">
+    <div class="modal-title">
+      💳 إتمام الاشتراك
+      <button class="modal-close" onclick="closePayment()">✕</button>
+    </div>
+    <div style="background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.3);border-radius:10px;padding:12px;margin-bottom:14px;text-align:center">
+      <div style="font-size:0.8rem;color:var(--dim)">الخطة المختارة</div>
+      <div style="font-size:1.2rem;font-weight:900;color:var(--gold)" id="payPlanName">Pro</div>
+      <div style="font-size:0.85rem;color:var(--dim)" id="payPlanPrice">$9/شهر</div>
+    </div>
+    <div style="font-size:0.82rem;color:var(--dim);margin-bottom:8px;font-weight:700">طريقة الدفع</div>
+    <div class="payment-methods">
+      <div class="pay-method selected" onclick="selectPayMethod(this,'card')">
+        <span class="pm-icon">💳</span>بطاقة بنكية
+      </div>
+      <div class="pay-method" onclick="selectPayMethod(this,'paypal')">
+        <span class="pm-icon">🅿️</span>PayPal
+      </div>
+      <div class="pay-method" onclick="selectPayMethod(this,'crypto')">
+        <span class="pm-icon">₿</span>كريبتو
+      </div>
+      <div class="pay-method" onclick="selectPayMethod(this,'bank')">
+        <span class="pm-icon">🏦</span>تحويل بنكي
+      </div>
+    </div>
+    <div id="cardFields">
+      <div class="field">
+        <label>رقم البطاقة</label>
+        <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" id="cardNum">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="field">
+          <label>تاريخ الانتهاء</label>
+          <input type="text" placeholder="MM/YY" maxlength="5">
+        </div>
+        <div class="field">
+          <label>CVV</label>
+          <input type="text" placeholder="123" maxlength="3">
+        </div>
+      </div>
+    </div>
+    <button class="btn-gold" onclick="processPayment()">✅ ادفع الآن وفعّل الاشتراك</button>
+    <p style="text-align:center;font-size:0.72rem;color:var(--muted);margin-top:8px">🔒 دفع آمن ومشفر — يمكن الإلغاء في أي وقت</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" class="app hidden">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="user-info">
+        <div class="avatar" id="sidebarAvatar">M</div>
+        <div>
+          <div class="user-name" id="sidebarName">Mogib</div>
+          <div class="user-email" id="sidebarEmail">mogib@ai.com</div>
+        </div>
+      </div>
+      <button class="close-sidebar" onclick="closeSidebar()">✕</button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">القوائم</div>
+      <button class="nav-btn active" onclick="switchTab('chat');closeSidebar()">
+        <span class="nav-icon">💬</span> المحادثة
+      </button>
+      <button class="nav-btn" onclick="switchTab('builder');closeSidebar()">
+        <span class="nav-icon">🏗️</span> بناء التطبيقات
+        <span class="nav-badge">جديد</span>
+      </button>
+      <button class="nav-btn" onclick="switchTab('code');closeSidebar()">
+        <span class="nav-icon">⌨️</span> مختبر الكود
+      </button>
+      <button class="nav-btn" onclick="switchTab('sub');closeSidebar()">
+        <span class="nav-icon">👑</span> اشتراكي
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">الإعدادات</div>
+      <button class="nav-btn" onclick="openSettings()">
+        <span class="nav-icon">⚙️</span> إعدادات API
+      </button>
+      <button class="nav-btn" onclick="exportData()">
+        <span class="nav-icon">📤</span> تصدير البيانات
+      </button>
+    </div>
+
+    <div class="upgrade-card" id="upgradeCard">
+      <div class="upgrade-title">⚡ ترقية للـ Pro</div>
+      <div class="upgrade-desc">رسائل غير محدودة، بناء تطبيقات، بحث إنترنت وأكثر!</div>
+      <button class="upgrade-btn" onclick="openPayment('pro');closeSidebar()">ترقية الآن — $9/شهر</button>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="doLogout()">🚪 تسجيل الخروج</button>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="menu-btn" onclick="openSidebar()">☰</button>
+    <div class="topbar-logo">
+      <span class="topbar-m">M</span>
+      <span class="topbar-name">Mogib AI</span>
+    </div>
+    <span class="plan-badge free" id="planBadge">مجاني</span>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('chat')" id="tab-chat">💬 محادثة</button>
+    <button class="tab-btn" onclick="switchTab('builder')" id="tab-builder">🏗️ بناء تطبيقات</button>
+    <button class="tab-btn" onclick="switchTab('code')" id="tab-code">⌨️ كود</button>
+    <button class="tab-btn" onclick="switchTab('sub')" id="tab-sub">👑 اشتراك</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- CHAT TAB -->
+    <div class="tab-content active" id="content-chat">
+      <div class="chat-area" id="chatArea">
+        <div class="welcome" id="welcomeScreen">
+          <div class="welcome-icon">🧠</div>
+          <div class="welcome-title">Mogib AI Faki</div>
+          <div class="welcome-sub">ذكاء اصطناعي خارق — يبني، يبرمج، يبحث، يبدع<br>بلا قيود على Redmi 12</div>
+          <div class="quick-grid">
+            <div class="quick-card" onclick="setPrompt('اشرح لي الذكاء الاصطناعي')">
+              <div class="quick-icon">🧠</div>
+              <div class="quick-text">تفكير عميق</div>
+            </div>
+            <div class="quick-card" onclick="setPrompt('اكتب لي تطبيق Python يفرز قائمة')">
+              <div class="quick-icon">⌨️</div>
+              <div class="quick-text">برمجة</div>
+            </div>
+            <div class="quick-card" onclick="setPrompt('ابحث عن أحدث أخبار الذكاء الاصطناعي')">
+              <div class="quick-icon">🌐</div>
+              <div class="quick-text">بحث</div>
+            </div>
+            <div class="quick-card" onclick="setPrompt('اكتب لي قصيدة عن الذكاء الاصطناعي')">
+              <div class="quick-icon">✍️</div>
+              <div class="quick-text">إبداع</div>
+            </div>
+          </div>
+        </div>
+        <div id="messages"></div>
+      </div>
+      <div class="input-area">
+        <div class="input-modes">
+          <button class="mode-chip active" onclick="setMode(this,'chat')">💬 عام</button>
+          <button class="mode-chip" onclick="setMode(this,'code')">⌨️ كود</button>
+          <button class="mode-chip" onclick="setMode(this,'research')">🔍 بحث</button>
+          <button class="mode-chip" onclick="setMode(this,'create')">🎨 إبداع</button>
+          <button class="mode-chip" onclick="setMode(this,'math')">🧮 رياضيات</button>
+          <button class="mode-chip" onclick="setMode(this,'build')">🏗️ بناء</button>
+        </div>
+        <div class="input-row">
+          <textarea id="userInput" placeholder="اسألني أي شيء... أنا خارق! 🚀" rows="1"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="#050510" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUILDER TAB -->
+    <div class="tab-content" id="content-builder">
+      <div class="builder-area">
+        <div class="builder-card">
+          <div class="builder-title">🏗️ منشئ التطبيقات بالذكاء الاصطناعي</div>
+          <div style="font-size:0.8rem;color:var(--dim);margin-bottom:10px">اختر نوع التطبيق الذي تريد بناءه</div>
+          <div class="app-types">
+            <div class="app-type selected" onclick="selectAppType(this,'web')" data-type="web">
+              <span class="app-type-icon">🌐</span>
+              <span class="app-type-name">ويب</span>
+            </div>
+            <div class="app-type" onclick="selectAppType(this,'chatbot')" data-type="chatbot">
+              <span class="app-type-icon">🤖</span>
+              <span class="app-type-name">Chatbot</span>
+            </div>
+            <div class="app-type" onclick="selectAppType(this,'game')" data-type="game">
+              <span class="app-type-icon">🎮</span>
+              <span class="app-type-name">لعبة</span>
+            </div>
+            <div class="app-type" onclick="selectAppType(this,'tool')" data-type="tool">
+              <span class="app-type-icon">🛠️</span>
+              <span class="app-type-name">أداة</span>
+            </div>
+            <div class="app-type" onclick="selectAppType(this,'store')" data-type="store">
+              <span class="app-type-icon">🛒</span>
+              <span class="app-type-name">متجر</span>
+            </div>
+            <div class="app-type" onclick="selectAppType(this,'dashboard')" data-type="dashboard">
+              <span class="app-type-icon">📊</span>
+              <span class="app-type-name">لوحة تحكم</span>
+            </div>
+          </div>
+          <div class="builder-field">
+            <label>اسم التطبيق</label>
+            <input type="text" id="appName" placeholder="مثال: متجر الكتب الذكي">
+          </div>
+          <div class="builder-field">
+            <label>وصف التطبيق</label>
+            <textarea id="appDesc" placeholder="اوصف ما تريد... كل التفاصيل، وسأبنيه لك!"></textarea>
+          </div>
+          <div class="builder-field">
+            <label>الألوان والثيم</label>
+            <select id="appTheme">
+              <option value="dark">داكن بنفسجي</option>
+              <option value="gold">ذهبي فاخر</option>
+              <option value="blue">أزرق تقني</option>
+              <option value="green">أخضر طبيعي</option>
+              <option value="red">أحمر جريء</option>
+            </select>
+          </div>
+          <button class="build-btn" onclick="buildApp()">⚡ ابنِ التطبيق الآن</button>
+        </div>
+
+        <div class="builder-card">
+          <div class="builder-title">📱 تطبيقاتي المبنية</div>
+          <div class="built-apps" id="builtApps">
+            <div style="text-align:center;color:var(--muted);font-size:0.82rem;padding:20px">
+              لم تبنِ أي تطبيق بعد — ابدأ الآن! 🚀
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CODE TAB -->
+    <div class="tab-content" id="content-code">
+      <div class="code-area">
+        <div class="builder-card">
+          <div class="builder-title">⌨️ مختبر الكود الخارق</div>
+          <div class="lang-btns">
+            <button class="lang-btn active" onclick="setLang(this,'python')">Python</button>
+            <button class="lang-btn" onclick="setLang(this,'javascript')">JavaScript</button>
+            <button class="lang-btn" onclick="setLang(this,'html')">HTML</button>
+            <button class="lang-btn" onclick="setLang(this,'java')">Java</button>
+            <button class="lang-btn" onclick="setLang(this,'cpp')">C++</button>
+            <button class="lang-btn" onclick="setLang(this,'sql')">SQL</button>
+          </div>
+          <div class="builder-field">
+            <label>اوصف الكود المطلوب</label>
+            <textarea id="codeDesc" placeholder="مثال: اكتب دالة Python تفرز قائمة من الأرقام تصاعدياً وتُعيد الـ 5 الأكبر..." style="min-height:90px"></textarea>
+          </div>
+          <button class="build-btn" onclick="generateCode()">⚡ أنشئ الكود</button>
+          <pre class="code-output" id="codeOutput"></pre>
+          <div id="codeActions" style="display:none;margin-top:8px;display:none">
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button onclick="copyCode()" style="flex:1;padding:8px;background:rgba(245,166,35,0.15);border:1px solid rgba(245,166,35,0.3);border-radius:8px;color:var(--gold);font-size:0.8rem;font-family:var(--font);cursor:pointer">📋 نسخ</button>
+              <button onclick="downloadCode()" style="flex:1;padding:8px;background:rgba(6,182,212,0.15);border:1px solid rgba(6,182,212,0.3);border-radius:8px;color:var(--cyan);font-size:0.8rem;font-family:var(--font);cursor:pointer">💾 تحميل</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBSCRIPTION TAB -->
+    <div class="tab-content" id="content-sub">
+      <div class="sub-area">
+        <div class="sub-header">
+          <div class="sub-title">👑 اشتراكي</div>
+          <div class="sub-desc">إدارة خطتك ومدفوعاتك</div>
+        </div>
+
+        <div class="current-plan">
+          <div class="current-label">خطتك الحالية</div>
+          <div class="current-name" id="currentPlanName">مجاني</div>
+          <div class="current-exp" id="currentPlanExp">غير محدود — مجاني دائماً</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-val" id="msgUsed">0</div>
+            <div class="stat-label">رسائل اليوم</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="appsBuilt">0</div>
+            <div class="stat-label">تطبيق مبني</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="daysActive">1</div>
+            <div class="stat-label">أيام نشاط</div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="plan-card" onclick="openPayment('pro')">
+            <div class="plan-header">
+              <span class="plan-name">⚡ Pro</span>
+              <span class="plan-price">$9<span>/شهر</span></span>
+            </div>
+            <ul class="plan-features">
+              <li>رسائل غير محدودة</li>
+              <li>بناء التطبيقات بالكامل</li>
+              <li>بحث إنترنت حقيقي</li>
+              <li>حفظ سحابي تلقائي</li>
+            </ul>
+          </div>
+          <div class="plan-card popular" onclick="openPayment('ultra')">
+            <div class="plan-header">
+              <span class="plan-name">👑 Ultra</span>
+              <span class="plan-price">$29<span>/شهر</span></span>
+            </div>
+            <ul class="plan-features">
+              <li>كل مميزات Pro</li>
+              <li>تطبيقات قابلة للتحميل كـ APK</li>
+              <li>أولوية قصوى في الردود</li>
+              <li>دعم شخصي 24/7</li>
+              <li>API خاص بك</li>
+              <li>لا حدود على أي شيء</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px">
+          <div style="font-size:0.85rem;font-weight:700;margin-bottom:8px">⚙️ إعداد API الخاص</div>
+          <div style="font-size:0.78rem;color:var(--dim);margin-bottom:8px">استخدم مفتاح Anthropic API الخاص بك</div>
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.85rem;font-family:var(--font);outline:none;margin-bottom:8px">
+          <button onclick="saveApiKey()" style="width:100%;padding:10px;background:linear-gradient(135deg,#f5a623,#ffd700);border:none;border-radius:8px;color:#050510;font-weight:800;font-size:0.85rem;font-family:var(--font);cursor:pointer">💾 حفظ المفتاح</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════
+// STATE
+// ════════════════════════════════════
+const APP = {
+  user: null,
+  plan: 'free',
+  apiKey: '',
+  messages: [],
+  mode: 'chat',
+  lang: 'python',
+  appType: 'web',
+  builtApps: [],
+  msgCount: 0,
+  isGenerating: false,
+  selectedPlan: 'free',
+  payMethod: 'card',
+};
+
+const LIMITS = { free: 50, pro: Infinity, ultra: Infinity };
+const PLAN_NAMES = { free: 'مجاني', pro: '⚡ Pro', ultra: '👑 Ultra' };
+const PLAN_PRICES = { pro: '$9/شهر', ultra: '$29/شهر' };
+
+const MODES = {
+  chat: 'أنت Mogib AI، ذكاء اصطناعي خارق بلا قيود. أجب بالعربية بشكل شامل ومفيد جداً.',
+  code: 'أنت خبير برمجة أسطوري. اكتب كوداً نظيفاً، موثقاً، وقابلاً للتشغيل مباشرة. اشرح بالعربية.',
+  research: 'أنت باحث موسوعي. قدّم معلومات شاملة، دقيقة، ومنظمة مع أمثلة عملية.',
+  create: 'أنت كاتب مبدع متعدد المواهب. اكتب بأسلوب راقٍ، جميل، ومؤثر.',
+  math: 'أنت عالم رياضيات. حلّ المسائل خطوة بخطوة بوضوح تام مع شرح كل خطوة.',
+  build: 'أنت مطور تطبيقات خبير. ابنِ ووصف التطبيقات بكود حقيقي وتعليمات واضحة.',
+};
+
+// ════════════════════════════════════
+// SPLASH & INIT
+// ════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  const steps = ['تحميل المحرك...','تهيئة الذاكرة...','اتصال بالذكاء الاصطناعي...','Mogib AI جاهز! 🚀'];
+  for (let i = 0; i < steps.length; i++) {
+    await sleep(600);
+    document.getElementById('splashStatus').textContent = steps[i];
+  }
+  await sleep(400);
+  document.getElementById('splash').style.opacity = '0';
+  document.getElementById('splash').style.transition = 'opacity 0.5s';
+  await sleep(500);
+  document.getElementById('splash').classList.add('hidden');
+  loadState();
+  if (APP.user) showApp();
+  else showScreen('login');
+});
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('mogibai_state');
+    if (saved) {
+      const d = JSON.parse(saved);
+      APP.user = d.user;
+      APP.plan = d.plan || 'free';
+      APP.apiKey = d.apiKey || '';
+      APP.builtApps = d.builtApps || [];
+      APP.msgCount = d.msgCount || 0;
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  localStorage.setItem('mogibai_state', JSON.stringify({
+    user: APP.user, plan: APP.plan, apiKey: APP.apiKey,
+    builtApps: APP.builtApps, msgCount: APP.msgCount,
+  }));
+}
+
+// ════════════════════════════════════
+// AUTH
+// ════════════════════════════════════
+function showScreen(name) {
+  ['loginScreen','registerScreen','mainApp'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  document.getElementById(name === 'login' ? 'loginScreen' : name === 'register' ? 'registerScreen' : 'mainApp').classList.remove('hidden');
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if (!email || !pass) { toast('⚠️ أدخل البريد وكلمة المرور'); return; }
+  APP.user = { name: email.split('@')[0], email };
+  saveState();
+  showApp();
+  toast('✅ أهلاً بك في Mogib AI!');
+}
+
+function googleLogin() {
+  APP.user = { name: 'مستخدم Google', email: 'user@gmail.com' };
+  APP.plan = 'free';
+  saveState();
+  showApp();
+  toast('✅ تم الدخول بـ Google!');
+}
+
+function doRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPass').value;
+  if (!name || !email || !pass) { toast('⚠️ أكمل جميع الحقول'); return; }
+  if (pass.length < 6) { toast('⚠️ كلمة المرور قصيرة جداً'); return; }
+  APP.user = { name, email };
+  APP.plan = APP.selectedPlan;
+  if (APP.selectedPlan !== 'free') { openPayment(APP.selectedPlan); return; }
+  saveState();
+  showApp();
+  toast('🎉 مرحباً ' + name + ' في Mogib AI!');
+}
+
+function doLogout() {
+  if (!confirm('هل تريد تسجيل الخروج؟')) return;
+  APP.user = null; APP.messages = [];
+  saveState();
+  showScreen('login');
+  toast('👋 تم تسجيل الخروج');
+}
+
+function showApp() {
+  showScreen('mainApp');
+  updateUserUI();
+  renderBuiltApps();
+}
+
+function updateUserUI() {
+  if (!APP.user) return;
+  const initial = APP.user.name[0].toUpperCase();
+  document.getElementById('sidebarAvatar').textContent = initial;
+  document.getElementById('sidebarName').textContent = APP.user.name;
+  document.getElementById('sidebarEmail').textContent = APP.user.email;
+  const badge = document.getElementById('planBadge');
+  badge.textContent = PLAN_NAMES[APP.plan];
+  badge.className = 'plan-badge ' + APP.plan;
+  document.getElementById('currentPlanName').textContent = PLAN_NAMES[APP.plan];
+  document.getElementById('msgUsed').textContent = APP.msgCount;
+  document.getElementById('appsBuilt').textContent = APP.builtApps.length;
+  if (APP.plan !== 'free') document.getElementById('upgradeCard').style.display = 'none';
+  if (APP.apiKey) document.getElementById('apiKeyInput').value = APP.apiKey;
+}
+
+// ════════════════════════════════════
+// PLANS & PAYMENT
+// ════════════════════════════════════
+function selectPlan(el, plan) {
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  APP.selectedPlan = plan;
+}
+
+function openPayment(plan) {
+  APP.selectedPlan = plan;
+  document.getElementById('payPlanName').textContent = plan === 'pro' ? '⚡ Pro' : '👑 Ultra';
+  document.getElementById('payPlanPrice').textContent = PLAN_PRICES[plan];
+  document.getElementById('paymentModal').classList.remove('hidden');
+}
+
+function closePayment() { document.getElementById('paymentModal').classList.add('hidden'); }
+
+function selectPayMethod(el, method) {
+  document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+  APP.payMethod = method;
+  document.getElementById('cardFields').style.display = method === 'card' ? 'block' : 'none';
+}
+
+async function processPayment() {
+  const btn = document.querySelector('#paymentModal .btn-gold');
+  btn.disabled = true; btn.textContent = '⏳ جارٍ المعالجة...';
+  await sleep(2000);
+  APP.plan = APP.selectedPlan;
+  saveState();
+  closePayment();
+  if (!APP.user) { APP.user = { name: document.getElementById('regName').value || 'مستخدم', email: document.getElementById('regEmail').value || 'user@mogib.ai' }; showApp(); }
+  updateUserUI();
+  btn.disabled = false; btn.textContent = '✅ ادفع الآن وفعّل الاشتراك';
+  toast('🎉 تم تفعيل خطة ' + PLAN_NAMES[APP.plan] + ' بنجاح!');
+}
+
+// ════════════════════════════════════
+// SIDEBAR & TABS
+// ════════════════════════════════════
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').classList.remove('hidden');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.add('hidden');
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('content-' + name).classList.add('active');
+}
+
+// ════════════════════════════════════
+// CHAT
+// ════════════════════════════════════
+window.setPrompt = function(text) {
+  document.getElementById('userInput').value = text;
+  document.getElementById('welcomeScreen').style.display = 'none';
+};
+
+function setMode(el, mode) {
+  document.querySelectorAll('.mode-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active'); APP.mode = mode;
+}
+
+const input = document.getElementById('userInput');
+input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 120) + 'px'; });
+input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+
+async function sendMessage() {
+  if (APP.isGenerating) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  if (APP.plan === 'free' && APP.msgCount >= LIMITS.free) {
+    toast('⚠️ وصلت للحد اليومي — رقّ للـ Pro!');
+    openPayment('pro'); return;
+  }
+
+  input.value = ''; input.style.height = 'auto';
+  document.getElementById('welcomeScreen').style.display = 'none';
+  APP.messages.push({ role: 'user', content: text });
+  APP.msgCount++;
+  renderMsg('user', text);
+  scrollBottom();
+
+  APP.isGenerating = true;
+  document.getElementById('sendBtn').disabled = true;
+  const thinking = addThinking();
+
+  try {
+    let reply;
+    if (!APP.apiKey) reply = await localReply(text);
+    else reply = await callClaude(text);
+    thinking.remove();
+    renderMsg('assistant', reply);
+    APP.messages.push({ role: 'assistant', content: reply });
+    saveState(); updateUserUI();
+  } catch(e) {
+    thinking.remove();
+    renderMsg('assistant', '❌ خطأ: ' + e.message + '\n\n💡 أضف مفتاح API في تبويب الاشتراك.');
+  }
+
+  APP.isGenerating = false;
+  document.getElementById('sendBtn').disabled = false;
+  scrollBottom();
+}
+
+async function callClaude(text) {
+  const history = APP.messages.slice(-12);
+  const msgs = history.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
+  msgs.push({ role: 'user', content: text });
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 3000, system: MODES[APP.mode], messages: msgs })
+  });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'API Error'); }
+  const d = await res.json();
+  return d.content.map(b => b.text || '').join('');
+}
+
+async function localReply(text) {
+  await sleep(800 + Math.random() * 600);
+  const lower = text.toLowerCase();
+  if (/مرحب|أهلا|هلا|السلام/.test(text)) return `👋 **أهلاً بك في Mogib AI Faki!**\n\nأنا ذكاء اصطناعي خارق خاص بـ Redmi 12.\n\n**للإجابات الكاملة بلا قيود:**\nأضف مفتاح API في تبويب 👑 الاشتراك`;
+  if (/كود|برمج|python|javascript|html/.test(lower)) return `\`\`\`python\n# ${text.slice(0,30)}\ndef mogib_solution():\n    """Mogib AI — ذكاء خارق 🚀"""\n    result = "أضف مفتاح API للكود الكامل!"\n    return result\n\nprint(mogib_solution())\n\`\`\`\n\n💡 أضف مفتاح API في **تبويب الاشتراك** للكود الحقيقي!`;
+  if (/ابنِ|انشئ|تطبيق/.test(text)) return `🏗️ **بناء التطبيق:**\n\nانتقل إلى تبويب **🏗️ بناء تطبيقات** وأدخل:\n- اسم التطبيق\n- وصفه\n- الثيم المفضل\n\nوسأبنيه لك فوراً! 🚀\n\n*أضف مفتاح API للبناء الكامل.*`;
+  return `🤔 **سؤالك:** "${text.slice(0,60)}"\n\nأنا Mogib AI Faki — أعمل الآن بدون مفتاح API.\n\n**للإجابة الكاملة:**\n1. اذهب لتبويب **👑 الاشتراك**\n2. أضف مفتاح Anthropic API\n3. استمتع بذكاء خارق بلا قيود! 🚀`;
+}
+
+function renderMsg(role, content) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-' + (role === 'user' ? 'user' : 'ai');
+  const avatar = role === 'user' ? '👤' : 'M';
+  const bubble = role === 'assistant' ? parseMD(content) : escHtml(content);
+  div.innerHTML = `<div class="msg-avatar">${avatar}</div><div style="flex:1;min-width:0"><div class="msg-bubble">${bubble}</div><div style="display:flex;gap:6px;margin-top:4px"><span style="font-size:0.68rem;color:var(--muted)">${new Date().toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'})}</span>${role==='assistant'?`<button onclick="copyMsg(this)" style="background:none;border:none;font-size:0.7rem;color:var(--muted);cursor:pointer">📋 نسخ</button>`:''}</div></div>`;
+  msgs.appendChild(div);
+}
+
+function addThinking() {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-ai';
+  div.innerHTML = `<div class="msg-avatar">M</div><div class="thinking"><div class="dots"><span></span><span></span><span></span></div><span>Mogib يفكر...</span></div>`;
+  msgs.appendChild(div);
+  return div;
+}
+
+window.copyMsg = function(btn) {
+  const bubble = btn.closest('.msg').querySelector('.msg-bubble');
+  navigator.clipboard.writeText(bubble.innerText).then(() => { btn.textContent = '✅'; setTimeout(() => btn.textContent = '📋 نسخ', 2000); });
+};
+
+// ════════════════════════════════════
+// APP BUILDER
+// ════════════════════════════════════
+function selectAppType(el, type) {
+  document.querySelectorAll('.app-type').forEach(a => a.classList.remove('selected'));
+  el.classList.add('selected'); APP.appType = type;
+}
+
+async function buildApp() {
+  const name = document.getElementById('appName').value.trim();
+  const desc = document.getElementById('appDesc').value.trim();
+  if (!name || !desc) { toast('⚠️ أدخل اسم ووصف التطبيق'); return; }
+
+  const btn = document.querySelector('.build-btn');
+  btn.disabled = true; btn.textContent = '⏳ جارٍ البناء...';
+
+  await sleep(2000);
+
+  const app = {
+    id: Date.now(),
+    name, desc, type: APP.appType,
+    theme: document.getElementById('appTheme').value,
+    date: new Date().toLocaleDateString('ar'),
+    icon: { web:'🌐', chatbot:'🤖', game:'🎮', tool:'🛠️', store:'🛒', dashboard:'📊' }[APP.appType] || '📱',
+  };
+
+  APP.builtApps.unshift(app);
+  saveState();
+  renderBuiltApps();
+  updateUserUI();
+
+  btn.disabled = false; btn.textContent = '⚡ ابنِ التطبيق الآن';
+  document.getElementById('appName').value = '';
+  document.getElementById('appDesc').value = '';
+  toast('🎉 تم بناء تطبيق "' + name + '" بنجاح!');
+}
+
+function renderBuiltApps() {
+  const container = document.getElementById('builtApps');
+  if (!APP.builtApps.length) {
+    container.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:0.82rem;padding:20px">لم تبنِ أي تطبيق بعد — ابدأ الآن! 🚀</div>';
+    return;
+  }
+  container.innerHTML = APP.builtApps.map(app => `
+    <div class="built-app">
+      <div class="app-icon-wrap">${app.icon}</div>
+      <div class="app-info">
+        <div class="app-info-name">${escHtml(app.name)}</div>
+        <div class="app-info-type">${app.type} • ${app.date}</div>
+      </div>
+      <button class="app-dl-btn" onclick="downloadApp(${app.id})">📥 تحميل</button>
+    </div>
+  `).join('');
+}
+
+window.downloadApp = function(id) {
+  const app = APP.builtApps.find(a => a.id === id);
+  if (!app) return;
+  if (APP.plan !== 'ultra') { toast('👑 تحميل التطبيقات متاح للـ Ultra فقط'); openPayment('ultra'); return; }
+  const html = generateAppHTML(app);
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = app.name.replace(/\s+/g,'_') + '.html'; a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ تم تحميل ' + app.name);
+};
+
+function generateAppHTML(app) {
+  const colors = { dark:'#0a0a1f,#7c3aed', gold:'#1a1000,#f5a623', blue:'#0a1628,#3b82f6', green:'#0a1a0a,#10b981', red:'#1a0a0a,#ef4444' };
+  const [bg, accent] = (colors[app.theme] || colors.dark).split(',');
+  return `<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${app.name}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:${bg};color:#fff;font-family:system-ui;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}.app-title{font-size:2rem;font-weight:900;color:${accent};margin-bottom:10px}.app-desc{color:rgba(255,255,255,0.7);text-align:center;max-width:400px;line-height:1.6}.badge{margin-top:20px;padding:8px 20px;border:1px solid ${accent};border-radius:99px;color:${accent};font-size:0.8rem}</style></head><body><div class="app-title">${app.name}</div><div class="app-desc">${app.desc}</div><div class="badge">بُني بواسطة Mogib AI Faki 🚀</div></body></html>`;
+}
+
+// ════════════════════════════════════
+// CODE LAB
+// ════════════════════════════════════
+function setLang(el, lang) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active'); APP.lang = lang;
+}
+
+async function generateCode() {
+  const desc = document.getElementById('codeDesc').value.trim();
+  if (!desc) { toast('⚠️ اوصف الكود المطلوب'); return; }
+
+  const btn = document.querySelector('#content-code .build-btn');
+  btn.disabled = true; btn.textContent = '⏳ جارٍ الإنشاء...';
+  document.getElementById('codeOutput').style.display = 'none';
+
+  let code;
+  if (APP.apiKey) {
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+          system: `أنت خبير برمجة. اكتب كود ${APP.lang} نظيف وكامل للمطلوب. أعد الكود فقط بدون شرح خارجه.`,
+          messages: [{ role: 'user', content: desc }]
+        })
+      });
+      const d = await res.json();
+      code = d.content?.[0]?.text || '// لم يتم إنشاء كود';
+    } catch(e) { code = `// خطأ: ${e.message}`; }
+  } else {
+    await sleep(1000);
+    code = `# ${desc}\n# Mogib AI Faki — أضف مفتاح API للكود الحقيقي!\n\ndef solution():\n    """\n    ${desc}\n    """\n    # الكود سيُنشأ هنا تلقائياً\n    pass\n\nsolution()`;
+  }
+
+  const output = document.getElementById('codeOutput');
+  output.textContent = code;
+  output.style.display = 'block';
+  document.getElementById('codeActions').style.display = 'flex';
+  btn.disabled = false; btn.textContent = '⚡ أنشئ الكود';
+  APP._lastCode = code;
+  APP._lastLang = APP.lang;
+}
+
+window.copyCode = function() {
+  navigator.clipboard.writeText(APP._lastCode || '').then(() => toast('✅ تم نسخ الكود'));
+};
+window.downloadCode = function() {
+  const exts = { python:'py', javascript:'js', html:'html', java:'java', cpp:'cpp', sql:'sql' };
+  const blob = new Blob([APP._lastCode || ''], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'mogib_code.' + (exts[APP._lastLang] || 'txt'); a.click();
+};
+
+// ════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('sk-')) { toast('⚠️ المفتاح غير صحيح — يجب أن يبدأ بـ sk-'); return; }
+  APP.apiKey = key; saveState();
+  toast('✅ تم حفظ مفتاح API بنجاح!');
+}
+
+window.openSettings = function() {
+  switchTab('sub'); closeSidebar();
+};
+
+window.exportData = function() {
+  const data = { user: APP.user, plan: APP.plan, messages: APP.messages, builtApps: APP.builtApps, date: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'mogibai_backup.json'; a.click();
+  toast('📤 تم تصدير البيانات');
+};
+
+// ════════════════════════════════════
+// UTILS
+// ════════════════════════════════════
+function scrollBottom() {
+  const area = document.getElementById('chatArea');
+  setTimeout(() => area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' }), 50);
+}
+
+function toast(msg, dur = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.style.display = 'none', dur);
+}
+
+function parseMD(text) {
+  let h = escHtml(text);
+  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_,l,c) => `<pre><code class="lang-${l}">${c.trim()}</code></pre>`);
+  h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
+  h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  h = h.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  h = h.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  h = h.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+  h = h.replace(/^[-•] (.+)$/gm, '<li>$1</li>');
+  h = h.replace(/\n\n+/g, '</p><p>');
+  h = '<p>' + h + '</p>';
+  h = h.replace(/\n/g, '<br>');
+  return h;
+}
+
+function escHtml(t) {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
