@@ -1,0 +1,696 @@
+1. .env.example
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+SECRET_KEY=your-secret-key-change
+MYFATOORAH_API_KEY=your_myfatoorah_key
+MYFATOORAH_MODE=test
+NOWPAYMENTS_API_KEY=your_nowpayments_key
+```
+
+2. .gitignore
+
+```
+venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+*.log
+instance/
+uploads/
+static/plots/
+mythos_memory.db
+```
+
+3. LICENSE (نص MIT مختصر)
+
+```
+MIT License
+
+Copyright (c) 2025
+
+Permission is hereby granted, free of charge, to any person obtaining a copy...
+```
+
+4. README.md (محدث)
+
+```md
+# GroqCraft – Mythos 5 Simulator
+
+محاكاة متقدمة لواجهة Claude Mythos 5 (النسخة الخام فائقة الذكاء) باستخدام Groq API المجاني.
+
+## الميزات
+- محادثة ذكية (Llama 3 70B)
+- واجهة Playground كاملة: Temperature, Max Tokens, Extended Thinking
+- رفع ملفات ضخمة وتحليلها (محاكاة سياق 1M)
+- Artifacts: توليد واجهات مستخدم تفاعلية من الأوامر الطبيعية
+- نظام مستخدمين واشتراكات Pro (يدعم الدفع الإلكتروني والعملات الرقمية)
+- يعمل على جميع الأجهزة
+
+## التشغيل
+```bash
+pip install -r requirements.txt
+python app.py
+```
+
+الوصول إلى Mythos
+
+· سجل دخول بحساب Pro (المدير الافتراضي: admin@example.com / admin123)
+· اضغط على زر "🔮 Mythos 5 Playground"
+
+ملاحظة
+
+هذه محاكاة تعليمية وتقنية؛ النموذج الحقيقي Mythos 5 متاح فقط عبر منصات حكومية وبحثية.
+
+```
+
+#### 5. `requirements.txt` (محدث)
+```txt
+flask==3.0.3
+groq==0.9.0
+python-dotenv==1.0.1
+PyPDF2==3.0.1
+python-docx==1.1.0
+pytesseract==0.3.13
+Pillow==10.3.0
+pandas==2.2.2
+openpyxl==3.1.2
+requests==2.32.3
+duckduckgo-search==5.3.0
+flask-sqlalchemy==3.1.1
+flask-login==0.6.3
+werkzeug==3.0.3
+email-validator==2.1.1
+numpy==1.26.4
+scikit-learn==1.4.2
+langdetect==1.0.9
+sympy==1.12
+matplotlib==3.8.4
+phonenumbers==8.13.52
+nowpayments-python-sdk==1.1.6
+```
+
+6. docker-compose.yml (نفس السابق)
+
+```yaml
+version: '3'
+services:
+  groqcraft:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+```
+
+7. app.py (محدث – تمت إضافة blueprint mythos)
+
+```python
+import os
+from flask import Flask, render_template
+from dotenv import load_dotenv
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+from werkzeug.security import generate_password_hash
+
+load_dotenv()
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///groqcraft.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = 'uploads'
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+from models import db
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.login'
+
+from models import User
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# Blueprints
+from auth import auth_bp
+from payments import payments_bp
+from payments_crypto import crypto_payments_bp
+from admin import admin_bp
+from api import api_bp
+from mythos_ui import mythos_bp
+
+app.register_blueprint(auth_bp)
+app.register_blueprint(payments_bp)
+app.register_blueprint(crypto_payments_bp)
+app.register_blueprint(admin_bp)
+app.register_blueprint(api_bp, url_prefix='/api')
+app.register_blueprint(mythos_bp)  # Mythos 5 Dashboard
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+with app.app_context():
+    db.create_all()
+    if not User.query.filter_by(is_admin=True).first():
+        admin = User(
+            username='admin',
+            email='admin@example.com',
+            password_hash=generate_password_hash('admin123'),
+            is_admin=True,
+            is_verified=True,
+            subscription_plan='pro'
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print("✅ Admin created: admin@example.com / admin123")
+
+if __name__ == '__main__':
+    app.run(debug=True, threaded=True, host='0.0.0.0', port=5000)
+```
+
+8. models.py (نفس السابق، موجود – تأكد من وجود عمود subscription_plan)
+
+```python
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+from datetime import datetime
+
+db = SQLAlchemy()
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
+    country = db.Column(db.String(100), nullable=True)
+    password_hash = db.Column(db.String(200), nullable=False)
+    is_verified = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    subscription_plan = db.Column(db.String(20), default='free')
+    subscription_end = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    verification_code = db.Column(db.String(6), nullable=True)
+
+    def check_password(self, password):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.password_hash, password)
+
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    amount = db.Column(db.Float)
+    method = db.Column(db.String(50))
+    bank_name = db.Column(db.String(100), nullable=True)
+    reference = db.Column(db.String(100), unique=True)
+    status = db.Column(db.String(20), default='pending')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class ScientificQuery(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    question = db.Column(db.Text, nullable=False)
+    specialty = db.Column(db.String(100))
+    answer = db.Column(db.Text)
+    developed_ideas = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+```
+
+9. auth.py (نفس السابق)
+
+```python
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from werkzeug.security import generate_password_hash
+from models import db, User
+from flask_login import login_user, logout_user, login_required, current_user
+import random, phonenumbers
+from phonenumbers import geocoder
+
+auth_bp = Blueprint('auth', __name__)
+
+def send_verification_email(email, code):
+    print(f"[DEV] Verification code for {email}: {code}")
+
+@auth_bp.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        phone = request.form.get('phone')
+        password = request.form['password']
+        if User.query.filter_by(email=email).first():
+            flash('Email already exists', 'danger')
+            return redirect(url_for('auth.register'))
+        formatted_phone = None
+        country = None
+        if phone:
+            try:
+                parsed = phonenumbers.parse(phone, None)
+                if not phonenumbers.is_valid_number(parsed):
+                    flash('Invalid phone number', 'danger')
+                    return redirect(url_for('auth.register'))
+                formatted_phone = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+                country = geocoder.description_for_number(parsed, "en")
+            except:
+                flash('Phone format error, use +1234567890', 'danger')
+                return redirect(url_for('auth.register'))
+        code = str(random.randint(100000, 999999))
+        user = User(
+            username=username,
+            email=email,
+            phone=formatted_phone,
+            country=country,
+            password_hash=generate_password_hash(password),
+            verification_code=code
+        )
+        db.session.add(user)
+        db.session.commit()
+        send_verification_email(email, code)
+        session['temp_user_id'] = user.id
+        flash('Registered! Enter verification code', 'info')
+        return redirect(url_for('auth.verify'))
+    return render_template('register.html')
+
+@auth_bp.route('/verify', methods=['GET', 'POST'])
+def verify():
+    if request.method == 'POST':
+        code = request.form['code']
+        user_id = session.get('temp_user_id')
+        if not user_id:
+            return redirect(url_for('auth.register'))
+        user = User.query.get(user_id)
+        if user and user.verification_code == code:
+            user.is_verified = True
+            user.verification_code = None
+            db.session.commit()
+            login_user(user)
+            session.pop('temp_user_id', None)
+            flash('Verification successful', 'success')
+            return redirect(url_for('index'))
+        flash('Wrong code', 'danger')
+    return render_template('verify.html')
+
+@auth_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
+        if user and user.check_password(password):
+            if not user.is_verified:
+                flash('Please verify your email first', 'warning')
+                return redirect(url_for('auth.verify'))
+            login_user(user)
+            return redirect(url_for('index'))
+        flash('Invalid credentials', 'danger')
+    return render_template('login.html')
+
+@auth_bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+```
+
+10. payments.py (نفس السابق)
+
+```python
+from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask_login import login_required, current_user
+from models import db, Payment, User
+from datetime import datetime, timedelta
+import uuid, requests, os
+
+payments_bp = Blueprint('payments', __name__)
+
+MYFATOORAH_API_KEY = os.getenv('MYFATOORAH_API_KEY', '')
+MYFATOORAH_MODE = os.getenv('MYFATOORAH_MODE', 'test')
+MYFATOORAH_URL = 'https://apitest.myfatoorah.com' if MYFATOORAH_MODE == 'test' else 'https://api.myfatoorah.com'
+
+def create_myfatoorah_invoice(amount, user_email, user_name, payment_id):
+    headers = {'Authorization': f'Bearer {MYFATOORAH_API_KEY}', 'Content-Type': 'application/json'}
+    data = {
+        'CustomerName': user_name,
+        'CustomerEmail': user_email,
+        'InvoiceValue': amount,
+        'DisplayCurrencyIso': 'USD',
+        'CallBackUrl': f'http://localhost:5000/payment-callback?payment_id={payment_id}',
+        'ErrorUrl': 'http://localhost:5000/payment-error',
+        'Language': 'en'
+    }
+    response = requests.post(f'{MYFATOORAH_URL}/v2/SendPayment', headers=headers, json=data)
+    return response.json()
+
+@payments_bp.route('/subscribe')
+@login_required
+def subscribe_page():
+    return render_template('payment.html', banks=['Bank of Khartoum', 'Central Bank of Sudan'])
+
+@payments_bp.route('/create-payment', methods=['POST'])
+@login_required
+def create_payment():
+    method = request.form.get('method')
+    amount = 10.0
+    payment = Payment(
+        user_id=current_user.id,
+        amount=amount,
+        method=method,
+        reference=str(uuid.uuid4()),
+        status='pending'
+    )
+    db.session.add(payment)
+    db.session.commit()
+    if method == 'myfatoorah' and MYFATOORAH_API_KEY:
+        result = create_myfatoorah_invoice(amount, current_user.email, current_user.username, payment.id)
+        if 'InvoiceId' in result:
+            payment.reference = str(result['InvoiceId'])
+            db.session.commit()
+            return redirect(result['PaymentURL'])
+        flash('Payment gateway error', 'danger')
+    elif method == 'bank_transfer':
+        flash('Bank transfer request created. Will be activated after confirmation.', 'info')
+    return redirect(url_for('payments.subscribe_page'))
+
+@payments_bp.route('/payment-callback')
+def payment_callback():
+    payment_id = request.args.get('payment_id')
+    payment = Payment.query.get(payment_id)
+    if payment:
+        payment.status = 'completed'
+        user = User.query.get(payment.user_id)
+        user.subscription_plan = 'pro'
+        user.subscription_end = datetime.utcnow() + timedelta(days=30)
+        db.session.commit()
+        flash('Pro subscription activated!', 'success')
+    return redirect(url_for('index'))
+
+@payments_bp.route('/payment-error')
+def payment_error():
+    flash('Payment failed', 'danger')
+    return redirect(url_for('payments.subscribe_page'))
+```
+
+11. payments_crypto.py (نفس السابق)
+
+```python
+from flask import Blueprint, request, jsonify, url_for
+from flask_login import login_required, current_user
+from models import db, Payment, User
+from datetime import datetime, timedelta
+import os, uuid
+from nowpayments import NOWPayments
+
+crypto_payments_bp = Blueprint('crypto_payments', __name__)
+np_client = None
+
+def init_crypto_payment_apis():
+    global np_client
+    api_key = os.getenv('NOWPAYMENTS_API_KEY')
+    if api_key:
+        np_client = NOWPayments(api_key=api_key, sandbox=True)
+        print("✅ NOWPayments ready")
+    else:
+        print("⚠️ NOWPayments not configured")
+
+@crypto_payments_bp.route('/crypto/create-payment', methods=['POST'])
+@login_required
+def create_crypto_payment():
+    if not np_client:
+        return jsonify({'error': 'Crypto payments not configured'}), 400
+    data = request.get_json()
+    amount = data.get('amount', 10.0)
+    crypto = data.get('crypto_currency', 'usdttrc20')
+    try:
+        payment = np_client.create_payment(
+            price_amount=amount,
+            price_currency='usd',
+            pay_currency=crypto,
+            order_id=f"crypto_{uuid.uuid4().hex[:8]}",
+            ipn_callback_url=url_for('crypto_payments.crypto_webhook', _external=True)
+        )
+        db_payment = Payment(
+            user_id=current_user.id,
+            amount=amount,
+            method=f'crypto_{crypto}',
+            reference=payment['payment_id'],
+            status='pending'
+        )
+        db.session.add(db_payment)
+        db.session.commit()
+        return jsonify({
+            'pay_address': payment['pay_address'],
+            'pay_amount': payment['pay_amount'],
+            'pay_currency': payment['pay_currency'],
+            'qr_code': payment.get('qr_code')
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@crypto_payments_bp.route('/crypto/webhook', methods=['POST'])
+def crypto_webhook():
+    data = request.get_json()
+    payment_id = data.get('payment_id')
+    status = data.get('payment_status')
+    payment = Payment.query.filter_by(reference=str(payment_id)).first()
+    if payment and status == 'finished':
+        payment.status = 'completed'
+        user = User.query.get(payment.user_id)
+        user.subscription_plan = 'pro'
+        user.subscription_end = datetime.utcnow() + timedelta(days=30)
+        db.session.commit()
+    return 'OK', 200
+```
+
+12. admin.py (نفس السابق)
+
+```python
+from flask import Blueprint, render_template, redirect, url_for, flash
+from flask_login import login_required, current_user
+from models import db, User, Payment
+
+admin_bp = Blueprint('admin', __name__)
+
+@admin_bp.route('/admin')
+@login_required
+def admin_dashboard():
+    if not current_user.is_admin:
+        return "Unauthorized", 403
+    users = User.query.all()
+    payments = Payment.query.filter_by(status='pending').all()
+    return render_template('admin_dashboard.html', users=users, payments=payments)
+
+@admin_bp.route('/admin/verify-user/<int:user_id>')
+@login_required
+def verify_user(user_id):
+    if not current_user.is_admin:
+        return "Unauthorized", 403
+    user = User.query.get_or_404(user_id)
+    user.is_verified = True
+    db.session.commit()
+    flash(f'User {user.username} verified', 'success')
+    return redirect(url_for('admin.admin_dashboard'))
+
+@admin_bp.route('/admin/verify-payment/<int:payment_id>')
+@login_required
+def verify_payment(payment_id):
+    if not current_user.is_admin:
+        return "Unauthorized", 403
+    payment = Payment.query.get_or_404(payment_id)
+    payment.status = 'completed'
+    user = User.query.get(payment.user_id)
+    user.subscription_plan = 'pro'
+    from datetime import datetime, timedelta
+    user.subscription_end = datetime.utcnow() + timedelta(days=30)
+    db.session.commit()
+    flash('Payment confirmed, Pro activated', 'success')
+    return redirect(url_for('admin.admin_dashboard'))
+```
+
+13. api.py (نفس السابق، مع التأكد من وجود pro_required)
+
+```python
+from flask import Blueprint, request, jsonify, Response, stream_with_context
+from flask_login import login_required, current_user
+from subscription import pro_required
+from utils.scientific_advisor import ScientificAdvisor
+from utils.scientific_plot import plot_function
+from utils.file_processor import extract_text_from_file
+from models import db, ScientificQuery
+from groq import Groq
+import os, json
+
+api_bp = Blueprint('api', __name__)
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+advisor = ScientificAdvisor(client)
+
+@api_bp.route('/chat', methods=['POST'])
+@login_required
+def chat():
+    data = request.json
+    messages = data.get('messages', [])
+    def generate():
+        stream = client.chat.completions.create(
+            model="llama3-70b-8192",
+            messages=messages,
+            temperature=0.7,
+            stream=True
+        )
+        for chunk in stream:
+            if chunk.choices[0].delta.content:
+                yield f"data: {json.dumps({'text': chunk.choices[0].delta.content})}\\n\\n"
+        yield "data: [DONE]\\n\\n"
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')
+
+@api_bp.route('/ask-science', methods=['POST'])
+@login_required
+@pro_required
+def ask_science():
+    data = request.json
+    question = data.get('question')
+    result = advisor.full_scientific_analysis(question, current_user.id)
+    query = ScientificQuery(
+        user_id=current_user.id,
+        question=question,
+        specialty=result.get('specialty'),
+        answer=result.get('answer'),
+        developed_ideas=json.dumps(result.get('developed_ideas', {}))
+    )
+    db.session.add(query)
+    db.session.commit()
+    return jsonify(result)
+
+@api_bp.route('/plot-function', methods=['POST'])
+@login_required
+def plot_function_endpoint():
+    data = request.json
+    expr = data.get('expression')
+    plot_img = plot_function(expr)
+    if plot_img:
+        return jsonify({'plot': plot_img})
+    else:
+        return jsonify({'error': 'invalid expression'}), 400
+
+@api_bp.route('/upload-file', methods=['POST'])
+@login_required
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'no file'}), 400
+    file = request.files['file']
+    text = extract_text_from_file(file)
+    return jsonify({'text': text[:2000]})
+
+@api_bp.route('/develop-idea', methods=['POST'])
+@login_required
+@pro_required
+def develop_idea():
+    data = request.json
+    idea = data.get('idea')
+    specialty = data.get('specialty', 'general')
+    development = advisor.develop_idea_into_project(idea, specialty)
+    return jsonify(development)
+```
+
+14. subscription.py (تأكد من وجوده)
+
+```python
+from functools import wraps
+from flask import abort
+from flask_login import current_user
+from datetime import datetime
+
+def pro_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated:
+            abort(401)
+        if current_user.subscription_plan != 'pro':
+            abort(403)
+        if current_user.subscription_end and current_user.subscription_end < datetime.utcnow():
+            current_user.subscription_plan = 'free'
+            from models import db
+            db.session.commit()
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated
+```
+
+15. mythos_ui.py (جديد – محاكاة Mythos 5)
+
+```python
+from flask import Blueprint, render_template, request, jsonify, current_app
+from flask_login import login_required, current_user
+from subscription import pro_required
+from groq import Groq
+import os, json
+
+mythos_bp = Blueprint('mythos', __name__, url_prefix='/mythos')
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+@mythos_bp.route('/')
+@login_required
+@pro_required
+def mythos_dashboard():
+    """الصفحة الرئيسية لوحدة Mythos (محاكاة لوحة مراقبة الباحث)."""
+    return render_template('mythos_dashboard.html')
+
+@mythos_bp.route('/playground', methods=['GET', 'POST'])
+@login_required
+@pro_required
+def mythos_playground():
+    """واجهة Playground مع معاملات متقدمة تشبه بيئة المطورين."""
+    if request.method == 'POST':
+        data = request.json
+        system_prompt = data.get('system_prompt', '')
+        user_prompt = data.get('user_prompt', '')
+        temperature = float(data.get('temperature', 0.7))
+        max_tokens = int(data.get('max_tokens', 4096))
+        # extended_ththinking وهمي (نمرره كجزء من النظام)
+        extended = data.get('extended_thinking', False)
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt + (" [Extended Thinking Mode]" if extended else "")})
+        messages.append({"role": "user", "content": user_prompt})
+        try:
+            response = client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=False
+            )
+            answer = response.choices[0].message.content
+            return jsonify({"answer": answer})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    return render_template('mythos_playground.html')
+
+@mythos_bp.route('/artifacts')
+@login_required
+@pro_required
+def mythos_artifacts():
+    """عرض الأعمال البرمجية التي ينتجها النموذج (Artifacts)."""
+    return render_template('mythos_artifacts.html')
+
+@mythos_bp.route('/upload-large-file', methods=['POST'])
+@login_required
+@pro_required
+def upload_large_file():
+    """رفع ملفات ضخمة (حتى 10 ميجابايت) وتحليلها بواسطة النموذج."""
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "Empty filename"}), 400
+    content = file.read().decode('utf-8', errors='replace')
+    prompt = f"""File: {file.filename}\nContent snippet (first 3000 chars):\n{content[:3000]}\n\nPlease analyze this file, summarize its scientific/technical importance. If code, explain language and purpose."""
+    response = client.chat.completions.create(
+        model="llama3-70b-8192",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3
+    )
+    summary = response.choices[0].message.content
+    return jsonify({"filename": file.filename, "summary": summary})
+```
