@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-lab-void text-lab-paper font-body antialiased;
+    background-image:
+      linear-gradient(rgba(94,230,168,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(94,230,168,0.035) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  ::selection {
+    background: rgba(94,230,168,0.25);
+  }
+
+  *:focus-visible {
+    outline: 2px solid #5EE6A8;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply bg-lab-panel border border-lab-edge rounded-lg;
+  }
+
+  .label-eyebrow {
+    @apply text-xs font-mono tracking-widest text-signal-phosphor uppercase;
+  }
+
+  .btn-primary {
+    @apply bg-signal-phosphor text-lab-void font-semibold px-5 py-2.5 rounded-md
+           hover:shadow-glow transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply border border-lab-edge text-lab-paper px-5 py-2.5 rounded-md
+           hover:border-signal-phosphor hover:text-signal-phosphor transition-all duration-200;
+  }
+
+  .input-field {
+    @apply bg-lab-void border border-lab-edge rounded-md px-4 py-2.5 text-lab-paper
+           placeholder:text-lab-steel focus:border-signal-phosphor outline-none transition-colors;
+  }
+}
